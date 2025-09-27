@@ -376,6 +376,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 		EN1_STATE(0);
 		EN0_STATE(1);
 		display7SEG(2);
+		
 	}
 	if(counter <= 0){
 		counter = 100;

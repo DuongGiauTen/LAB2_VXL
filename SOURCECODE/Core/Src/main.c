@@ -50,10 +50,7 @@ TIM_HandleTypeDef htim2;
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_TIM2_Init(void);
-void EN1_STATE();
-void EN2_STATE();
-void display7SEG();
-/* USER2 CODE BEGIN PFP */
+/* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
 
@@ -206,14 +203,17 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, LED_RED_Pin|EN0_Pin|EN1_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, DOT_Pin|LED_RED_Pin|EN0_Pin|EN1_Pin
+                          |EN2_Pin|EN3_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, SEG0_Pin|SEG1_Pin|SEG2_Pin|SEG3_Pin
                           |SEG4_Pin|SEG5_Pin|SEG6_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : LED_RED_Pin EN0_Pin EN1_Pin */
-  GPIO_InitStruct.Pin = LED_RED_Pin|EN0_Pin|EN1_Pin;
+  /*Configure GPIO pins : DOT_Pin LED_RED_Pin EN0_Pin EN1_Pin
+                           EN2_Pin EN3_Pin */
+  GPIO_InitStruct.Pin = DOT_Pin|LED_RED_Pin|EN0_Pin|EN1_Pin
+                          |EN2_Pin|EN3_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -248,7 +248,22 @@ void EN1_STATE(int state){
 		HAL_GPIO_WritePin(EN1_GPIO_Port, EN1_Pin, SET);
 	}
 }
-
+void EN2_STATE(int state){
+	if (state == 0){
+		HAL_GPIO_WritePin(EN2_GPIO_Port, EN2_Pin, RESET);
+	}
+	else{
+		HAL_GPIO_WritePin(EN2_GPIO_Port, EN2_Pin, SET);
+	}
+}
+void EN3_STATE(int state){
+	if (state == 0){
+		HAL_GPIO_WritePin(EN3_GPIO_Port, EN3_Pin, RESET);
+	}
+	else{
+		HAL_GPIO_WritePin(EN3_GPIO_Port, EN3_Pin, SET);
+	}
+}
 void display7SEG(int num) {
     // Mapping assumed:
     // SEG0 -> segment a
@@ -363,22 +378,52 @@ void display7SEG(int num) {
 }
 
 
-int counter = 100;
+int counter = 200;
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	counter--;
-	if(counter >50){
-		EN1_STATE(1);
+	//display dot
+	if(counter > 100){
+		HAL_GPIO_WritePin(DOT_GPIO_Port, DOT_Pin, RESET);
+	}
+	else {
+		HAL_GPIO_WritePin(DOT_GPIO_Port, DOT_Pin, SET);
+	}
+
+
+
+	// display number
+	if(counter >150){
 		EN0_STATE(0);
+		EN1_STATE(1);
+		EN2_STATE(1);
+		EN3_STATE(1);
 		display7SEG(1);
 	}
-	else{
-		EN1_STATE(0);
+	else if (counter > 100){
 		EN0_STATE(1);
+		EN1_STATE(0);
+		EN2_STATE(1);
+		EN3_STATE(1);
 		display7SEG(2);
 	}
+	else if(counter > 50){
+		EN0_STATE(1);
+		EN1_STATE(1);
+		EN2_STATE(0);
+		EN3_STATE(1);
+		display7SEG(3);
+
+	}
+	else {
+		EN0_STATE(1);
+		EN1_STATE(1);
+		EN2_STATE(1);
+		EN3_STATE(0);
+		display7SEG(0);
+	}
 	if(counter <= 0){
-		counter = 100;
+		counter = 200;
 	}
 }
 /* USER CODE END 4 */

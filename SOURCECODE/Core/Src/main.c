@@ -99,7 +99,7 @@ int main(void)
   MX_GPIO_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
-  setTimer1(500);
+  setTimer1(250);
   HAL_TIM_Base_Start_IT(&htim2);
   int counter = 0;
 
@@ -115,20 +115,20 @@ int main(void)
 //	  display7SEG(7);
 //	  HAL_Delay(500);
 	  if (flag == 1){
-		  setTimer1(500);
+		  setTimer1(250);
 		  update7SEG(index_led++);
 		  if(index_led > 3){
 			  index_led = 0;
 		  }
 
-		  if(counter < 2){
+		  if(counter < 4){
 			  HAL_GPIO_WritePin(DOT_GPIO_Port, DOT_Pin, RESET);
 		  }
 		  else {
 			  HAL_GPIO_WritePin(DOT_GPIO_Port, DOT_Pin, SET);
 		  }
 		  counter++;
-		  if(counter >= 4){
+		  if(counter >= 8){
 			  counter = 0;
 		  }
 	  }

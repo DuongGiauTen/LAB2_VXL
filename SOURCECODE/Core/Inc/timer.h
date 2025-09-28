@@ -11,9 +11,13 @@
 #define TICK 10
 int count;
 int flag;
+int count2;
+int flag2;
 
 void setTimer1(int duration);
 void timer1Run(void);
+void setTimer2(int duration);
+void timer2Run(void);
 
 
 #endif /* INC_TIMER_H_ */

@@ -22,6 +22,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "timer.h"
 
 /* USER CODE END Includes */
 
@@ -62,6 +63,9 @@ void display7SEG(int num);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+const int MAX_LED = 4;
+int index_led = 0;
+int led_buffer[4] = {1,2,3,4};
 
 /* USER CODE END 0 */
 
@@ -95,7 +99,10 @@ int main(void)
   MX_GPIO_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
+  setTimer1(500);
   HAL_TIM_Base_Start_IT(&htim2);
+  int counter = 0;
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -107,6 +114,24 @@ int main(void)
 //	  HAL_GPIO_WritePin(EN1_GPIO_Port, EN1_Pin, SET);
 //	  display7SEG(7);
 //	  HAL_Delay(500);
+	  if (flag == 1){
+		  setTimer1(500);
+		  update7SEG(index_led++);
+		  if(index_led > 3){
+			  index_led = 0;
+		  }
+
+		  if(counter < 2){
+			  HAL_GPIO_WritePin(DOT_GPIO_Port, DOT_Pin, RESET);
+		  }
+		  else {
+			  HAL_GPIO_WritePin(DOT_GPIO_Port, DOT_Pin, SET);
+		  }
+		  counter++;
+		  if(counter >= 4){
+			  counter = 0;
+		  }
+	  }
 
     /* USER CODE END WHILE */
 
@@ -385,9 +410,7 @@ void display7SEG(int num) {
 }
 
 
-const int MAX_LED = 4;
-int index_led = 0;
-int led_buffer[4] = {1,2,3,4};
+
 void update7SEG(int index){
 	switch (index){
 	case 0:
@@ -416,10 +439,10 @@ void update7SEG(int index){
 		break;
 	case 3:
 		//Forth 7SEG
-		EN0_STATE(0);
-		EN1_STATE(0);
-		EN2_STATE(0);
-		EN3_STATE(1);
+		EN0_STATE(1);
+		EN1_STATE(1);
+		EN2_STATE(1);
+		EN3_STATE(0);
 		display7SEG(led_buffer[index]);
 		break;
 	default:
@@ -430,29 +453,11 @@ void update7SEG(int index){
 
 
 
-int counter = 200;
+//int counter = 200;
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-	counter--;
-	//display dot
-	if(counter > 100){
-		HAL_GPIO_WritePin(DOT_GPIO_Port, DOT_Pin, RESET);
-	}
-	else {
-		HAL_GPIO_WritePin(DOT_GPIO_Port, DOT_Pin, SET);
-	}
 
-
-
-	// display number
-	update7SEG(index_led++);
-	if(index_led >3){
-		index_led = 0;
-	}
-
-	if(counter <= 0){
-		counter = 200;
-	}
+	timer1Run();
 }
 /* USER CODE END 4 */
 

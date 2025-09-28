@@ -51,6 +51,12 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_TIM2_Init(void);
 /* USER CODE BEGIN PFP */
+void EN1_STATE(int state);
+void EN2_STATE(int state);
+void EN3_STATE(int state);
+void EN0_STATE(int state);
+void update7SEG(int index);
+void display7SEG(int num);
 
 /* USER CODE END PFP */
 
@@ -264,6 +270,7 @@ void EN3_STATE(int state){
 		HAL_GPIO_WritePin(EN3_GPIO_Port, EN3_Pin, SET);
 	}
 }
+
 void display7SEG(int num) {
     // Mapping assumed:
     // SEG0 -> segment a
@@ -378,6 +385,51 @@ void display7SEG(int num) {
 }
 
 
+const int MAX_LED = 4;
+int index_led = 0;
+int led_buffer[4] = {1,2,3,4};
+void update7SEG(int index){
+	switch (index){
+	case 0:
+		// First 7SEG
+		EN0_STATE(0);
+		EN1_STATE(1);
+		EN2_STATE(1);
+		EN3_STATE(1);
+		display7SEG(led_buffer[index]);
+		break;
+	case 1:
+		// Second 7SEG
+		EN0_STATE(1);
+		EN1_STATE(0);
+		EN2_STATE(1);
+		EN3_STATE(1);
+		display7SEG(led_buffer[index]);
+		break;
+	case 2:
+		//Third 7SEG
+		EN0_STATE(1);
+		EN1_STATE(1);
+		EN2_STATE(0);
+		EN3_STATE(1);
+		display7SEG(led_buffer[index]);
+		break;
+	case 3:
+		//Forth 7SEG
+		EN0_STATE(0);
+		EN1_STATE(0);
+		EN2_STATE(0);
+		EN3_STATE(1);
+		display7SEG(led_buffer[index]);
+		break;
+	default:
+		break;
+	}
+
+}
+
+
+
 int counter = 200;
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
@@ -393,35 +445,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
 
 	// display number
-	if(counter >150){
-		EN0_STATE(0);
-		EN1_STATE(1);
-		EN2_STATE(1);
-		EN3_STATE(1);
-		display7SEG(1);
+	update7SEG(index_led++);
+	if(index_led >3){
+		index_led = 0;
 	}
-	else if (counter > 100){
-		EN0_STATE(1);
-		EN1_STATE(0);
-		EN2_STATE(1);
-		EN3_STATE(1);
-		display7SEG(2);
-	}
-	else if(counter > 50){
-		EN0_STATE(1);
-		EN1_STATE(1);
-		EN2_STATE(0);
-		EN3_STATE(1);
-		display7SEG(3);
 
-	}
-	else {
-		EN0_STATE(1);
-		EN1_STATE(1);
-		EN2_STATE(1);
-		EN3_STATE(0);
-		display7SEG(0);
-	}
 	if(counter <= 0){
 		counter = 200;
 	}

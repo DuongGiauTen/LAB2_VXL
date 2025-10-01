@@ -59,6 +59,8 @@ void EN0_STATE(int state);
 void update7SEG(int index);
 void display7SEG(int num);
 void updateClockBuffer();
+void updateLEDMatrix(int index);
+
 
 /* USER CODE END PFP */
 
@@ -68,6 +70,12 @@ const int MAX_LED = 4;
 int index_led = 0;
 int led_buffer[4] = {1,2,3,4};
 int hour = 23, minute = 59, second = 50;
+
+//ex9
+const int MAX_LED_MATRIX = 8;
+int counter_matrix = 0;
+int index_led_matrix = 0;
+uint8_t matrix_buffer[8] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08};
 
 /* USER CODE END 0 */
 
@@ -114,42 +122,21 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  HAL_GPIO_WritePin(ENM3_GPIO_Port, ENM3_Pin, SET);
+
+//	  HAL_GPIO_WritePin(ENM1_GPIO_Port, ENM1_Pin, SET);
+	  HAL_GPIO_WritePin(ROW5_GPIO_Port, ROW5_Pin, SET);
+//	  HAL_GPIO_WritePin(ROW6_GPIO_Port, ROW6_Pin, SET);
 	  if (flag2 == 1){
-		  setTimer2(1000);
-		  second++;
-		  if(second>=60){
-			  second = 0;
-			  minute++;
-		  }
-		  if(minute >= 60){
-			  minute = 0;
-			  hour++;
-		  }
-		  if(hour >= 24){
-			  hour = 0;
-		  }
-		  updateClockBuffer();
+		 setTimer2(1000);
+
+
+
 	  }
 	  //HAL_Delay(1000);
 
 	  if (flag == 1){
 		  setTimer1(250);
-
-		  update7SEG(index_led++);
-		  if(index_led > 3){
-			  index_led = 0;
-		  }
-
-		  if(counter < 4){
-			  HAL_GPIO_WritePin(DOT_GPIO_Port, DOT_Pin, RESET);
-		  }
-		  else {
-			  HAL_GPIO_WritePin(DOT_GPIO_Port, DOT_Pin, SET);
-		  }
-		  counter++;
-		  if(counter >= 8){
-			  counter = 0;
-		  }
 	  }
 
     /* USER CODE END WHILE */
@@ -293,6 +280,46 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+
+void updateLEDMatrix(int index){
+
+    switch (index){
+        case 0:
+        	HAL_GPIO_WritePin(ENM0_GPIO_Port, ENM0_Pin, SET);
+
+        	    // Dùng vòng lặp để xuất dữ liệu ra các hàng
+        	    for (int i = 0; i < 8; i++) {
+        	        // Lấy trạng thái của bit thứ i
+        	        if ((matrix_buffer[0] >> i) & 0x01) {
+        	            // Nếu bit là 1, kéo chân ROW tương ứng xuống LOW để bật đèn
+        	            HAL_GPIO_WritePin(GPIOB, (ROW0_Pin << i), SET); // Giả sử ROW0-7 là PB8-15
+        	        } else {
+        	            // Nếu bit là 0, kéo chân ROW lên HIGH để tắt đèn
+        	            HAL_GPIO_WritePin(GPIOB, (ROW0_Pin << i), RESET);
+        	        }
+        	    }
+            break;
+        case 1:
+            break;
+        case 2:
+            break;
+        case 3:
+            break;
+        case 4:
+            break;
+        case 5:
+            break;
+        case 6:
+            break;
+        case 7:
+            break;
+        default:
+            break;
+    }
+}
+
+
 
 void updateClockBuffer(){
 	led_buffer[0] = minute / 10;

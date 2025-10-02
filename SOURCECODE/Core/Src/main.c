@@ -75,8 +75,16 @@ int hour = 23, minute = 59, second = 50;
 const int MAX_LED_MATRIX = 8;
 int counter_matrix = 0;
 int index_led_matrix = 0;
-uint8_t matrix_buffer[8] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08};
-
+uint8_t matrix_buffer[8] = {
+    0x00, // 00000000
+    0x7C, // 01111100
+    0x12, // 00010010
+    0x11, // 00010001
+    0x11, // 00010001
+    0x12, // 00010010
+    0x7C, // 01111100
+    0x00  // 00000000
+};
 /* USER CODE END 0 */
 
 /**
@@ -122,13 +130,18 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  HAL_GPIO_WritePin(ENM3_GPIO_Port, ENM3_Pin, SET);
+	  //HAL_GPIO_WritePin(ENM3_GPIO_Port, ENM3_Pin, SET);
 
 //	  HAL_GPIO_WritePin(ENM1_GPIO_Port, ENM1_Pin, SET);
-	  HAL_GPIO_WritePin(ROW5_GPIO_Port, ROW5_Pin, SET);
+	  //HAL_GPIO_WritePin(ROW5_GPIO_Port, ROW5_Pin, SET);
 //	  HAL_GPIO_WritePin(ROW6_GPIO_Port, ROW6_Pin, SET);
 	  if (flag2 == 1){
-		 setTimer2(1000);
+		 setTimer2(50);
+		 updateLEDMatrix(counter++);
+		 if(counter >= 8){
+			 counter = 0;
+		 }
+
 
 
 
@@ -282,42 +295,71 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 
 
-void updateLEDMatrix(int index){
+// HÀM ĐƯỢC YÊU CẦU: updateLEDMatrix
+// Phiên bản này hoạt động với cả chân ENM và ROW không liên tiếp,
+// giữ nguyên cấu trúc switch-case và không dùng vòng lặp for.
 
-    switch (index){
+void updateLEDMatrix(int index) {
+    // Bước 1: Tắt tất cả các cột để tránh hiện tượng ghosting.
+    // Bước này vẫn giữ nguyên, gọi từng chân một.
+    HAL_GPIO_WritePin(ROW0_GPIO_Port, ROW0_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(ROW1_GPIO_Port, ROW1_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(ROW2_GPIO_Port, ROW2_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(ROW3_GPIO_Port, ROW3_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(ROW4_GPIO_Port, ROW4_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(ROW5_GPIO_Port, ROW5_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(ROW6_GPIO_Port, ROW6_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(ROW7_GPIO_Port, ROW7_Pin, GPIO_PIN_RESET);
+
+    // Bước 2: Gửi dữ liệu của cột hiện tại ra các chân ROW.
+    // Đây là phần thay đổi chính để xử lý các chân ROW không liên tiếp.
+    uint8_t column_data = matrix_buffer[index];
+
+    // "Trải phẳng" vòng lặp: Kiểm tra từng bit và đặt trạng thái cho từng chân ROW
+    // Giả sử ROWx được nối với cực Anode, nên SET = Sáng, RESET = Tắt.
+    HAL_GPIO_WritePin(ENM0_GPIO_Port, ENM0_Pin, (column_data & 0x01) ? GPIO_PIN_SET : GPIO_PIN_RESET); // Bit 0 cho ENM0
+    HAL_GPIO_WritePin(ENM1_GPIO_Port, ENM1_Pin, (column_data & 0x02) ? GPIO_PIN_SET : GPIO_PIN_RESET); // Bit 1 cho ENM1
+    HAL_GPIO_WritePin(ENM2_GPIO_Port, ENM2_Pin, (column_data & 0x04) ? GPIO_PIN_SET : GPIO_PIN_RESET); // Bit 2 cho ENM2
+    HAL_GPIO_WritePin(ENM3_GPIO_Port, ENM3_Pin, (column_data & 0x08) ? GPIO_PIN_SET : GPIO_PIN_RESET); // Bit 3 cho ENM3
+    HAL_GPIO_WritePin(ENM4_GPIO_Port, ENM4_Pin, (column_data & 0x10) ? GPIO_PIN_SET : GPIO_PIN_RESET); // Bit 4 cho ENM4
+    HAL_GPIO_WritePin(ENM5_GPIO_Port, ENM5_Pin, (column_data & 0x20) ? GPIO_PIN_SET : GPIO_PIN_RESET); // Bit 5 cho ENM5
+    HAL_GPIO_WritePin(ENM6_GPIO_Port, ENM6_Pin, (column_data & 0x40) ? GPIO_PIN_SET : GPIO_PIN_RESET); // Bit 6 cho ENM6
+    HAL_GPIO_WritePin(ENM7_GPIO_Port, ENM7_Pin, (column_data & 0x80) ? GPIO_PIN_SET : GPIO_PIN_RESET); // Bit 7 cho ENM7
+
+    // Bước 3: Bật đúng cột đang được quét bằng cấu trúc switch-case.
+    // Cấu trúc này được giữ nguyên theo yêu cầu của bạn.
+    switch (index) {
         case 0:
-        	HAL_GPIO_WritePin(ENM0_GPIO_Port, ENM0_Pin, SET);
-
-        	    // Dùng vòng lặp để xuất dữ liệu ra các hàng
-        	    for (int i = 0; i < 8; i++) {
-        	        // Lấy trạng thái của bit thứ i
-        	        if ((matrix_buffer[0] >> i) & 0x01) {
-        	            // Nếu bit là 1, kéo chân ROW tương ứng xuống LOW để bật đèn
-        	            HAL_GPIO_WritePin(GPIOB, (ROW0_Pin << i), SET); // Giả sử ROW0-7 là PB8-15
-        	        } else {
-        	            // Nếu bit là 0, kéo chân ROW lên HIGH để tắt đèn
-        	            HAL_GPIO_WritePin(GPIOB, (ROW0_Pin << i), RESET);
-        	        }
-        	    }
+            HAL_GPIO_WritePin(ROW0_GPIO_Port, ROW0_Pin, GPIO_PIN_SET);
             break;
         case 1:
+            HAL_GPIO_WritePin(ROW1_GPIO_Port, ROW1_Pin, GPIO_PIN_SET);
             break;
         case 2:
+            HAL_GPIO_WritePin(ROW2_GPIO_Port, ROW2_Pin, GPIO_PIN_SET);
             break;
         case 3:
+            HAL_GPIO_WritePin(ROW3_GPIO_Port, ROW3_Pin, GPIO_PIN_SET);
             break;
         case 4:
+            HAL_GPIO_WritePin(ROW4_GPIO_Port, ROW4_Pin, GPIO_PIN_SET);
             break;
         case 5:
+            HAL_GPIO_WritePin(ROW5_GPIO_Port, ROW5_Pin, GPIO_PIN_SET);
             break;
         case 6:
+            HAL_GPIO_WritePin(ROW6_GPIO_Port, ROW6_Pin, GPIO_PIN_SET);
             break;
         case 7:
+            HAL_GPIO_WritePin(ROW7_GPIO_Port, ROW7_Pin, GPIO_PIN_SET);
             break;
         default:
+            // Không làm gì nếu index không hợp lệ.
             break;
     }
 }
+
+
 
 
 

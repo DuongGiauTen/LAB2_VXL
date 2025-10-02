@@ -60,6 +60,7 @@ void update7SEG(int index);
 void display7SEG(int num);
 void updateClockBuffer();
 void updateLEDMatrix(int index);
+void shiftLeft();
 
 
 /* USER CODE END PFP */
@@ -136,10 +137,11 @@ int main(void)
 	  //HAL_GPIO_WritePin(ROW5_GPIO_Port, ROW5_Pin, SET);
 //	  HAL_GPIO_WritePin(ROW6_GPIO_Port, ROW6_Pin, SET);
 	  if (flag2 == 1){
-		 setTimer2(50);
+		 setTimer2(100);
 		 updateLEDMatrix(counter++);
 		 if(counter >= 8){
 			 counter = 0;
+			 shiftLeft();
 		 }
 
 
@@ -359,7 +361,21 @@ void updateLEDMatrix(int index) {
     }
 }
 
+void shiftLeft(){
+	// Save the first column's data before it's overwritten.
+	    uint8_t first_column_data = matrix_buffer[0];
 
+	    // Shift data from right to left for the first 7 columns.
+	    // matrix_buffer[0] = matrix_buffer[1]
+	    // matrix_buffer[1] = matrix_buffer[2]
+	    // ...
+	    for (int i = 0; i < MAX_LED_MATRIX - 1; i++) {
+	        matrix_buffer[i] = matrix_buffer[i+1];
+	    }
+
+	    // Place the saved first column's data into the last column to create a circular effect.
+	    matrix_buffer[MAX_LED_MATRIX - 1] = first_column_data;
+}
 
 
 

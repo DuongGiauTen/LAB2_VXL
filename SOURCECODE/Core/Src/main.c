@@ -103,7 +103,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
 //  setTimer1(250);
 //  setTimer2(250);
-  setTimer0(100);
+  setTimer0(50);
   HAL_TIM_Base_Start_IT(&htim2);
   //int counter = 0;
   //int counterClk = 0;

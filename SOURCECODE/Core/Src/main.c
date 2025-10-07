@@ -121,14 +121,14 @@ int main(void)
 			  index_led = 0;
 		  }
 
-		  if(counter < 4){
+		  if(counter < 2){
 			  HAL_GPIO_WritePin(DOT_GPIO_Port, DOT_Pin, RESET);
 		  }
 		  else {
 			  HAL_GPIO_WritePin(DOT_GPIO_Port, DOT_Pin, SET);
 		  }
 		  counter++;
-		  if(counter >= 8){
+		  if(counter >= 4){
 			  counter = 0;
 		  }
 	  }
